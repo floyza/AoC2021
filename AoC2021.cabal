@@ -33,6 +33,7 @@ library
       AoC6Post
       AoC7
       AoC8
+      AoC9
       Lib
   other-modules:
       Paths_AoC2021
