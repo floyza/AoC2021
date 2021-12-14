@@ -78,7 +78,7 @@ input = do
   i <- fmap parseLine . lines <$> readFile "inputs/12.txt"
   let (dat, (m, _)) = runState ((traverse . traverse) serialize i) (M.empty, 0)
   let graph = makeBigraph $ (\[x, y] -> (x, y)) <$> dat
-  return $ TravellingGraph graph (M.fromList $ (startPt, 1) : ((,0) <$> (endPt : M.elems m)))
+  return $ TravellingGraph graph (M.fromList $ (startPt, 100) : ((,0) <$> (endPt : M.elems m)))
 
 startPt = Pt (-1) Small
 
@@ -120,19 +120,24 @@ nextSteps g x = fmap extract $ pathsFrom g x
   where
     extract (Connection a b) = b
 
-travel :: Int -> TravellingGraph Pt -> Int
-travel travelCount graph = go startPt graph
+travel :: Bool -> TravellingGraph Pt -> Int
+travel extraMove graph = go (not extraMove) startPt graph
   where
-    go :: Pt -> TravellingGraph Pt -> Int
-    go = memo2 travelStep
-    travelStep :: Pt -> TravellingGraph Pt -> Int
-    travelStep x (TravellingGraph graph mp) =
+    go :: Bool -> Pt -> TravellingGraph Pt -> Int
+    go = memo3 travelStep
+    travelStep :: Bool -> Pt -> TravellingGraph Pt -> Int
+    travelStep extraTravelUsed x (TravellingGraph graph mp) =
       if x == endPt
         then 1
         else
-          let paths = filter (\p@(Pt i e) -> isBig e || ((mp ! p) < travelCount)) $ nextSteps graph x
-           in sum $ (\n -> go n (TravellingGraph graph (M.adjust (+ 1) n mp))) <$> paths
+          let next = nextSteps graph x
+              paths = filter (\p@(Pt i e) -> isBig e || ((mp ! p) == 0)) next
+              extraPaths = filter (\p@(Pt i e) -> isSmall e && (mp ! p) == 1) next
+           in sum ((\n -> go extraTravelUsed n (TravellingGraph graph (M.adjust (+ 1) n mp))) <$> paths)
+                + if extraTravelUsed
+                  then 0
+                  else sum ((\n -> go True n (TravellingGraph graph (M.adjust (+ 1) n mp))) <$> extraPaths)
 
-solution1 = travel 1 <$> input
+solution1 = travel False <$> input
 
-solution2 = travel 2 <$> input
+solution2 = travel True <$> input
