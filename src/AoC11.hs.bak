@@ -1,0 +1,41 @@
+module AoC11 where
+
+import Control.Arrow
+import Control.Monad.Trans.Writer
+import Data.Array
+import Data.Function
+import Data.Maybe
+import Data.Monoid
+
+type Mat = Array (Int, Int)
+
+type Acc = Writer Int
+
+surroundings :: (Int, Int) -> [(Int, Int)]
+surroundings (x, y) = [(a, b) | a <- [x -1 .. x + 1], b <- [y -1 .. y + 1]]
+
+existsIn :: Ix a => a -> Array a e -> Bool
+existsIn i o = inRange (bounds o) i
+
+flash :: (Int, Int) -> Mat (Maybe Int) -> Mat (Maybe Int)
+flash i o =
+  o
+    // ((id &&& fmap (+ 1) . (o !)) <$> (filter (`existsIn` o) (surroundings i)))
+    // [(i, Nothing)]
+
+flashes :: Mat (Maybe Int) -> Mat (Maybe Int)
+flashes o = filter ((maybe False (>= 9)) . snd) (assocs o) & map fst & foldr flash o
+
+advance :: Mat Int -> Mat Int
+advance o = fmap (+ 1) o & fmap Just & until (not . any (maybe False (>= 9))) flashes & fmap (fromMaybe 0)
+
+listMatToMat :: [[a]] -> Array (Int, Int) a
+listMatToMat l =
+  let xbound = length (head l) -1
+      ybound = length l -1
+   in listArray ((0, 0), (xbound, ybound)) (concat l)
+
+input :: IO (Mat Int)
+input = fmap (read . (: [])) . listMatToMat . lines <$> readFile "inputs/11.txt"
+
+solution1 = (!! 100) . iterate advance <$> input

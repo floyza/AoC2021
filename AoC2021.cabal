@@ -25,6 +25,10 @@ source-repository head
 library
   exposed-modules:
       AoC1
+      AoC10
+      AoC11
+      AoC11ST
+      AoC12
       AoC2
       AoC3
       AoC4
@@ -34,6 +38,7 @@ library
       AoC7
       AoC8
       AoC9
+      AoCBak
       Lib
   other-modules:
       Paths_AoC2021
@@ -44,6 +49,7 @@ library
     , array
     , base >=4.7 && <5
     , containers
+    , megaparsec
     , text
     , transformers
   default-language: Haskell2010
@@ -62,6 +68,7 @@ test-suite AoC2021-test
     , array
     , base >=4.7 && <5
     , containers
+    , megaparsec
     , text
     , transformers
   default-language: Haskell2010

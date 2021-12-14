@@ -25,6 +25,7 @@ dependencies:
 - transformers
 - MemoTrie
 - containers
+- megaparsec
 
 library:
   source-dirs: src
